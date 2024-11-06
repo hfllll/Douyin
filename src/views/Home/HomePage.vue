@@ -2,12 +2,12 @@
 // import { Expand, Search } from '@element-plus/icons-vue/dist/types';
 import  { ref, onMounted } from 'vue'
 import ShortVideo from './components/ShortVideo.vue';
+import BottomTabBar from '@/components/BottomTabBar.vue';
 const currentPage = ref(5)
 const currentVideo = ref(0)
 const videoHeight = ref(0)
 const translateX = ref(-200/3)
 const bigTranslateX = ref(-25.92)
-const index = ref(1)
 const isDown = ref(false)
 const currentX = ref(0)
 const currentY = ref(0)
@@ -24,29 +24,6 @@ const topTabPosition = ref([90/6, 195/6, 293/6, 386/6, 482/6])  // 点击不同�
 const lineLeftPosition = ref(topTabPosition.value[4]) // 顶部导航下划线的位置
 const isTogglePlay = ref() // 判断是否是开关视频播放
 const videoRef = ref(null)
-const right = (e) => {
-    e.stopImmediatePropagation()
-    if (index.value !== 6){
-        translateX.value -= 100 / 6
-        index.value++
-    }
-}
-const left = () => {
-    if (index.value !== 1){
-        translateX.value += 100 / 6
-        index.value--
-    }else
-        openWidget()  
-}
-const nextVideo = () => {
-    videoTranslateY.value -= 100/4
-}
-const openWidget = () => {
-    bigTranslateX.value = 0
-}
-const openSearch = () => {
-    bigTranslateX.value = - 1700 / 27
-}
 const topTabClick = (index) =>{
     activeTopTab.value = index
     lineLeftPosition.value = topTabPosition.value[index]
@@ -131,7 +108,7 @@ const onPointerup = () =>{
             videoTranslateY.value = prevTY.value + ( verticalGap > 0 ? 25 : -25 );
             videoRef.value.stop(currentVideo.value)
             currentVideo.value += (verticalGap > 0 ? -1 : 1)
-            videoRef.value.play(currentVideo.value)
+            videoRef.value.play(currentVideo.value, true)
         }
         else videoTranslateY.value = prevTY.value
     }
@@ -177,24 +154,11 @@ onMounted( () => {
                     </div>
                     <div class="son" style="background-color: #873600 ;" >博主主页</div>
                 </div>
-                <div class="bottom-nav">
-                    <button>首页</button>
-                    <button>商城</button>
-                    <button>+</button>
-                    <button>消息</button>
-                    <button>我</button>
-                </div>
+                <BottomTabBar></BottomTabBar>
             </div>
             <div class="search" style="background-color: pink;">
                 我是最右侧的搜索
             </div>
-        </div>
-        <div class="btn">
-            <button @click.stop="openWidget">打开左侧小组件</button>
-            <button @click.stop="openSearch">打开右侧搜索栏</button>
-            <button @click.stop="left">上一页</button>
-            <button @click.stop="right">下一页</button>
-            <button @click.stop="nextVideo">下一个视频</button>
         </div>
     </div>
     </div>
@@ -203,51 +167,38 @@ onMounted( () => {
 <style lang="scss">
     .container{
         width: 100vw;
-        height: 100vh;
+        // 在这里开始使用动态的vh值
+        height: calc(var(--vh, 1vh) * 100);
         background-color: #1c2833;
     }
     .father{
         background-color: black;
         position: relative;
-        width: 400px;
-        height: 100vh;
+        width: 375rem;
+        height: 100%;
         margin: 0 auto;
-        // background-color: green;
         overflow: hidden;
         display: flex;
-        line-height: 93vh;
-        .btn{
-            position: absolute;
-            z-index: 2;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%); //居中按钮
-            gap: 10px;
-            display: flex;
-            height: 29px;
-            background-color: transparent;
-            display: none;
-        }
+        // max-width: ;
         .swiper{
-            width: 1080px;
+            width: 270%;
             display: flex;
             transition: transform 0.5s ease;
             .widget{
-                width: 280px;
+                width: 262.5rem;
             }
             .search{
-                width: 400px;
+                width: 375rem;
             }
             .page-list{
                 position: relative;
-                width: 400px;
+                width: 375rem;
                 overflow: hidden;
                 .top-nav{
-                    // position: relative;
                     font-weight: 600;
                     width: 100%;
-                    height: 6vh;
-                    top: 10px;
+                    height: 6%;
+                    top: 9.375rem;
                     display: flex;
                     justify-content: space-between;
                     color: #A3A6AD;
@@ -257,7 +208,7 @@ onMounted( () => {
                     user-select: none;
                     button{
                         font-weight: 600;
-                        font-size: 17px;
+                        font-size: 16rem;
                         color: #A3A6AD;
                         border: none;
                         background-color: transparent
@@ -266,8 +217,8 @@ onMounted( () => {
                         color: #fff;
                     }
                     .icon-nav{
-                        // 图标无法实现和文本对齐 所以单独设置margin-top
-                        margin-top: 7px;
+                        // 图标无法使用context-cente 所以单独设置margin-top
+                        margin-top: 6rem;
                     }
                     .top-nav-bottom-line{
                         position: absolute;
@@ -280,52 +231,27 @@ onMounted( () => {
                     }
                 }
                 .box{
-                    width: 2400px;
+                    width: 2250rem;
                     background-color: black;
                     display: flex;
                     transition: transform 0.3s ease;
-                    height: 93vh;
+                    height: 93%;
                     .son{
-                        line-height: 93vh;
+                        line-height: calc(var(--vh, 1vh) * 93);
                         text-align: center;
                         user-select: none;
-                        width: 400px;
-                        height: 93vh;
+                        width: 375rem;
+                        height: 100%;
                         overflow: hidden;
-                        border-radius: 0px 0px 5px 5px;
+                        border-radius: 0rem 0rem 4rem 4rem;
                         .short-video-container{
+                            height: 400%;
                             transition: transform 0.3s ease;
-                            width: 400px;
+                            width: 375rem;
                         }
-                    }
-                }
-                .bottom-nav{
-                    height: 7vh;
-                    display: flex;
-                    justify-content: space-around;
-                    align-items: center;
-                    
-                    button{
-                        // background-color: white;
-                        user-select: none;
-                        color: #CFD3DC;
-                        font-size: 16px;
-                        font-weight: 600;
-                        border: none;
-                        background: none;
-                    }
-                    button:nth-child(3){
-                        border: 1px solid white;
-                        border-radius: 5px;
-                    }
-                    button:active{
-                        color: aqua;
-                        border-color: aqua;
                     }
                 }
             }
         }
-        
-        
     }
 </style>
