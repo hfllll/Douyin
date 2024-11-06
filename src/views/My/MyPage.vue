@@ -282,9 +282,7 @@
   }
 }
 //抖音商城 我的音乐 我的群聊 查看更多
-.extra {
-  
-}
+
 .extraItem {
   width: 6.22em;
   height: 4em;
