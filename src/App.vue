@@ -1,7 +1,6 @@
 <template>
     <router-view></router-view>
 </template>
-
 <script setup>
 import { onMounted } from 'vue';// 计算并设置1vh的值
 const updateVh = () =>{
@@ -57,11 +56,13 @@ onMounted(() => {
     else updateFontSize() 
     // 首次调用 设置字体大小
 })
-</script>
 
+</script>
 <style>
     *{
         box-sizing: border-box;
+
         margin: 0 auto;
     }
 </style>
+
