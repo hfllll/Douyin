@@ -1,3 +1,4 @@
+
 <script></script>
 <template>
   <router-view>
@@ -316,3 +317,4 @@
   border-bottom:2px solid #ffd700;
 }
 </style>
+
