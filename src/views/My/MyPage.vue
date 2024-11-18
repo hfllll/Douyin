@@ -135,10 +135,12 @@ const editInfo = () =>{
 </template>
 <style lang="scss" scoped>
 .container {
+  
   width: 100vw;
   height: calc(var(--vh, 1vh) * 100);
   background-color: #1c2833;
   .main {
+    margin: 0 auto;
     width: 375rem;
     height: 100%; 
     position: relative;
