@@ -3,6 +3,8 @@
 import  { ref, onMounted } from 'vue'
 import ShortVideo from './components/ShortVideo.vue';
 import BottomTabBar from '@/components/BottomTabBar.vue';
+import CommentArea from '@/components/CommentArea.vue';
+import { useCounterStore } from '@/stores/counter';
 const currentPage = ref(5)
 const currentVideo = ref(0)
 const videoHeight = ref(0)
@@ -20,7 +22,7 @@ const witchWay =ref(false) // 界面切换方向
 const topTabs = ref(['热点', '长视频', '关注', '经验', '推荐']) //顶部导航标志
 const activeTopTab = ref(4)  // 默认选中第五页
 const videoTranslateY = ref(0) // 短视频div的位移
-const topTabPosition = ref([90/6, 195/6, 293/6, 386/6, 482/6])  // 点击不同顶部tab，下划线应该对应的位置
+const topTabPosition = ref([90/6, 195/6, 293/6, 386/6, 478/6])  // 点击不同顶部tab，下划线应该对应的位置
 const lineLeftPosition = ref(topTabPosition.value[4]) // 顶部导航下划线的位置
 const isTogglePlay = ref() // 判断是否是开关视频播放
 const videoRef = ref(null)
@@ -31,6 +33,8 @@ const topTabClick = (index) =>{
     currentPage.value = index + 1
 }
 const onPointerdown = (e) => {
+    console.log('鼠标按下');
+    
     // 一开始假设成
     isTogglePlay.value = true
     // 记录一开始的    
@@ -39,13 +43,19 @@ const onPointerdown = (e) => {
     prevTY.value = videoTranslateY.value
     startX.value = currentX.value = e.clientX
     startY.value = currentY.value = e.clientY
+    
     isDown.value = true
-    // 暂时去掉box的平滑动画
+    // 暂时去掉三个动画效果
     document.querySelector('.box').style.transition = 'none'
     document.querySelector('.short-video-container').style.transition = 'none'
     document.querySelector('.top-nav-bottom-line').style.transition = 'none'
+    // 往视窗增加抬起和移动事件监听
+    document.addEventListener('pointerup', onPointerup)
+    document.addEventListener('pointermove', onPointermove)
 }
+
 const onPointermove = (e) => {
+
     isTogglePlay.value = false
     if (isDown.value === true){
         if ( !witchWay.value ){
@@ -72,14 +82,15 @@ const onPointermove = (e) => {
                     lineLeftPosition.value -= (disBetTab / 100) * (disBetMove / 4)
                 }
             }
-            else
-                videoTranslateY.value += 100 * (e.clientY - currentY.value) / videoHeight.value
+            else videoTranslateY.value += 100 * (e.clientY - currentY.value) / videoHeight.value
             currentX.value = e.clientX
             currentY.value = e.clientY
         }
     }
 }
+const counterStore = useCounterStore()
 const onPointerup = () =>{
+    console.log('鼠标抬起');
     const horizontalGap = translateX.value - prevTX.value
     const verticalGap = videoTranslateY.value - prevTY.value
     isDown.value = false
@@ -99,7 +110,6 @@ const onPointerup = () =>{
             // 判断下划线的临界条件 进行临界移动
             lineLeftPosition.value = topTabPosition.value[activeTopTab.value]
             // 增加当前短视频的判断
-
         }
         // 归位
         else translateX.value = prevTX.value
@@ -107,12 +117,23 @@ const onPointerup = () =>{
         if ( (nowTime - time.value < 400 && verticalGap )  || Math.abs( verticalGap ) > 100 / 12 ){
             videoTranslateY.value = prevTY.value + ( verticalGap > 0 ? 25 : -25 );
             videoRef.value.stop(currentVideo.value)
+            if (verticalGap > 0){
+                // 切换到了上一个视频
+                // counterStore.videoSources[0]
+            }else{
+                // 切换到了下一个视频
+                counterStore.videoSources.push(counterStore.videoSources[currentVideo.value])
+            }
             currentVideo.value += (verticalGap > 0 ? -1 : 1)
             videoRef.value.play(currentVideo.value, true)
         }
         else videoTranslateY.value = prevTY.value
     }
     witchWay.value = ''
+
+    // 移除两个增加的事件
+    document.removeEventListener('pointerup', onPointerup)
+    document.removeEventListener('pointermove', onPointermove)
 }
 onMounted( () => {
     videoHeight.value = document.querySelector('.short-video-container').clientHeight
@@ -120,14 +141,10 @@ onMounted( () => {
 </script>
 
 <template>
-    <div class="container"
-        @pointerdown="onPointerdown"
-        @pointerup="onPointerup"
-        @pointermove="onPointermove"
+<div class="container" @pointerdown="onPointerdown">
+    <div class="father"
     >
-    <div class="father">
-        <div class="swiper"
-         :style="{ transform: `translateX(${bigTranslateX}%)` }" >
+        <div class="swiper" :style="{ transform: 'translateX(' + bigTranslateX + '%)' }">
             <div class="widget" style="background-color: gray;" >
                 我是最左侧的小组件
             </div>
@@ -139,20 +156,23 @@ onMounted( () => {
                     :key="index" 
                     :class="{'top-tab-active': activeTopTab === index}"
                     @click="topTabClick(index)">{{ tab }}</button>
-                    <div class="top-nav-bottom-line" :style="{ left: `${lineLeftPosition}%` }"></div>
+                    <div class="top-nav-bottom-line" :style="{ left: lineLeftPosition + '%' }"></div>
+
                     <div class="icon-nav"><el-icon :size="20"><Search/></el-icon></div>
                 </div>
-                <div class="box" :style="{ transform: `translateX(${translateX}%)` }">
+                <div class="box" :style="{ transform: 'translateX(' + translateX + '%)' }">
                     <div class="son" style="background-color: yellow;">热点</div>
                     <div class="son" style="background-color: blue;" > 长视频</div>
                     <div class="son" style="background-color: gray;" >我的关注</div>
                     <div class="son" style="background-color: #5b2c6f ;" >经验页面</div>
-                    <div class="son">
-                        <div class="short-video-container" :style="{ transform: `translateY(${videoTranslateY}%)` }" >
-                            <ShortVideo :isTogglePlay="isTogglePlay" :currentVideo="currentVideo" ref="videoRef" ></ShortVideo>
+                    <div class="son" >
+                        <div class="short-video-container" :style="{ transform: 'translateY(' + videoTranslateY + '%)' }">
+
+                            <ShortVideo :isTogglePlay="isTogglePlay"
+                             :currentVideo="currentVideo" ref="videoRef" ></ShortVideo>
                         </div>
                     </div>
-                    <div class="son" style="background-color: #873600 ;" >博主主页</div>
+                    <div class="son" style="background-color: #873600 ;">博主主页</div>
                 </div>
                 <BottomTabBar></BottomTabBar>
             </div>
@@ -160,12 +180,20 @@ onMounted( () => {
                 我是最右侧的搜索
             </div>
         </div>
+        <!-- 评论区内容 -->
+        <CommentArea class="comment"></CommentArea>
     </div>
-    </div>
+</div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
+    .short-video-container{
+        height: 400%;
+        transition: transform 0.3s ease;
+        width: 375rem;
+    }
     .container{
+        touch-action: none;
         width: 100vw;
         // 在这里开始使用动态的vh值
         height: calc(var(--vh, 1vh) * 100);
@@ -193,12 +221,12 @@ onMounted( () => {
             .page-list{
                 position: relative;
                 width: 375rem;
-                overflow: hidden;
+                // overflow: hidden;
                 .top-nav{
                     font-weight: 600;
                     width: 100%;
                     height: 6%;
-                    top: 9.375rem;
+                    top: 0rem;
                     display: flex;
                     justify-content: space-between;
                     color: #A3A6AD;
@@ -208,7 +236,7 @@ onMounted( () => {
                     user-select: none;
                     button{
                         font-weight: 600;
-                        font-size: 16rem;
+                        font-size: 13rem;
                         color: #A3A6AD;
                         border: none;
                         background-color: transparent
@@ -222,9 +250,10 @@ onMounted( () => {
                     }
                     .top-nav-bottom-line{
                         position: absolute;
-                        bottom: 0%;
-                        width: 6%;
-                        height: 8%;
+                        bottom: 1rem;
+                        width: 20rem;
+                        height: 2.2rem;
+                        border-radius: 3rem;
                         background-color: #fff;
                         z-index: 2;
                         transition: left 0.3s ease;
@@ -244,11 +273,7 @@ onMounted( () => {
                         height: 100%;
                         overflow: hidden;
                         border-radius: 0rem 0rem 4rem 4rem;
-                        .short-video-container{
-                            height: 400%;
-                            transition: transform 0.3s ease;
-                            width: 375rem;
-                        }
+                        position: relative;
                     }
                 }
             }

@@ -12,8 +12,11 @@
     "core-js": "^3.8.3",
     "element-plus": "^2.8.6",
     "lodash": "^4.17.21",
+    "mitt": "^3.0.1",
+    "pinia": "^2.2.6",
     "vue": "^3.2.13",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vuetify": "^3.7.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
