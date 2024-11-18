@@ -1,5 +1,24 @@
 
-<script></script>
+<script setup>
+import {ref} from 'vue';
+import BottomTabBar from '@/components/BottomTabBar.vue';
+import { useRouter } from 'vue-router';
+const setStatus = (status) => {
+  selectedStatus.value = status
+}
+const selectedStatus = ref('作品')
+const videoSources = [
+    "/videos/抖音2024113-021964.mp4",
+    "/videos/抖音2024113-295887.mp4",
+    "/videos/抖音2024113-291746.mp4",
+    "/videos/抖音2024113-853385.mp4",
+];
+const videoRefs = ref([])
+const router = useRouter();
+const editInfo = () =>{
+  router.push('/info')
+}
+</script>
 <template>
   <router-view>
     <div class="container">
@@ -10,10 +29,10 @@
             class="bgc"
             src="@/assets/my.jpg"
             mode="scaleToFill"
-          />
+          />` `
           <!-- 导航栏 -->
           <div class="navigate">
-            <div class="navigate-edit">
+            <div @click="editInfo" class="navigate-edit">
               <img src="@/assets/my-edit.png" class="navigate-edit-icon"/>
               <div class="navigate-edit-text">编辑资料</div>
             </div>
@@ -43,7 +62,7 @@
            <div class="popup-container">
             <span class="fans">
               <div class="fans-text">124</div>
-              <div class="fans-item">点赞</div>
+              <div class="fans-item">获赞</div>
             </span>
             <span class="fans">
               <div class="fans-text">3778</div>
@@ -62,7 +81,7 @@
           <!-- 个人简介 -->
            <div class="context">
             <div class="context-info">每晚12:00直播 韩舞业余，专业蹦迪！</div>
-            <div class="context-info">我的小号@杨巅峰</div>
+            <div class="context-info">我的小号@金止蕉绿</div>
             <div class="context-info">商务V：Joymedia7</div>
             <div class="context-info">这辈子人潮汹涌 遇到你 我很幸运</div>
            </div>
@@ -96,20 +115,20 @@
            </div>
            <!-- 作品 私密 喜欢 收藏 -->
            <div class="status">
-            <span class="status-item active">作品</span>
-            <span class="status-item">私密</span>
-            <span class="status-item">喜欢</span>
-            <span class="status-item">收藏</span>
+            <span :class="['status-item',{ active:selectedStatus==='作品'}]" @click="setStatus('作品')">作品</span>
+            <span :class="['status-item',{ active:selectedStatus==='私密'}]" @click="setStatus('私密')">私密</span>
+            <span :class="['status-item',{ active:selectedStatus==='喜欢'}]" @click="setStatus('喜欢')">喜欢</span>
+            <span :class="['status-item',{ active:selectedStatus==='收藏'}]" @click="setStatus('收藏')">收藏</span>
           </div>
           <!-- 作品 -->
-           <div>
-            <div></div>
+           <div class="works" v-for="(src,index) in videoSources" :key="index">
+              <vedio ref="videoRefs" loop muted class="works-vedio" :src="src"></vedio>
            </div>
         </div>
         
          
          <!-- 底部导航栏 -->
-        <div class="bottom"></div>
+         <BottomTabBar class="bottom"></BottomTabBar>
       </div>
     </div>
   </router-view>
@@ -117,27 +136,28 @@
 <style lang="scss" scoped>
 .container {
   width: 100vw;
-  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   background-color: #1c2833;
   .main {
-    width: 400px;
-    height: 100vh; 
+    width: 375rem;
+    height: 100%; 
     position: relative;
   }
 }
 .bgc {
-  width: 25em;
-  height: 13.5em;
+  width: 375rem;
+  height: 20%;
 }
 // 导航栏 头像
 .navigate {
-  padding: 0.1em 1em;
+  width: 375rem;
+  padding: 1% 5rem;
   position: absolute;
   left: 0;
-  top: 0.5em;
+  top: 2%;
   &-edit {
-    width: 7em;
-    height: 1.5em;
+    width: 100rem;
+    height: 5%;
     background:rgba(0,0,0,0.1);
     display: flex;
     padding: 4px;
@@ -147,131 +167,146 @@
     margin: 0;
     float: left;
     &-icon {
-      width: 1em;
-      height: 1em;
+      width: 16rem;
+      height: 4%;
       float: left;
     }
     &-text {
-      font-size: 1em;
+      font-size: 15rem;
       color: white;
     }
   }
   &-icon {
-    margin-left: 10em;
+
+    // margin-left: 100rem;
   }
   &-avatar {
-    margin-top: 1em; 
+    margin-top: 3%; 
     float: left;
   }
   &-info {
-    height: 7em;
+    height: 90rem;
     // display: flex;
     flex-direction: column;
     vertical-align: middle;
     position:absolute;
-    left: 7em;
-    margin-left:2em;
+    left: 110rem;
+    margin-left:2rem;
     text-align: left;
     &-name {
-      line-height: 1.5em;
-      font-size: 1em;
+      // line-height: 10%;
+      font-size: 16rem;
       color: white;
       margin-top: 3em;
     }
     &-id {
-      line-height: 1.5em;
+      margin-top: 4rem;
     }
   }
 }
 .icons {
-  width: 1.6em;
-  height: 1.6em;
-  padding: 2px;
-  margin-right: 0.5em;
+  width: 30rem;
+  height: 8%;
+  padding: 4px;
+  // margin-right: 5rem;
   border-radius: 50%;
   background: rgba(0,0,0,0.1);
 }
 .icons:nth-child(1) {
-  margin-left: 2.5em;
+  margin-left: 100rem;
+  margin-right: 8rem;
+}
+.icon:nth-child(4){
+  margin-right: 0;
+}
+.icon:nth-child(3){
+  margin-right: 8rem;
+}
+.icon:nth-child(2){
+  margin-right: 8rem;
 }
 .avatarimg {
-  width: 7em;
-  height: 7em;
+  width: 100rem;
+  height: 26.6%;
   border-radius: 50%;
   border: 2px solid #000;
 }
 .id {
-  font-size: 0.8em;
+  font-size: 14rem;
   color: #babec7;
   float: left;
 }
 .ecode {
-  margin-left: 0.5em;
-  width: 0.7em;
-  height: 0.7em;
+  margin-top: 4rem;
+  margin-left: 6rem;
+  width: 11rem;
+  height:11rem;
 }
 //弹出层
 .popup {
   position: absolute;
-  top: 12em;
-  width: 25em;
-  min-height: 34em;
+  top: 200rem;
+  width: 375rem;
+  min-height: 70%;
   border: 1px solid #000;
   border-radius: 20px 20px 0 0;
   padding: 1em 0 0 0;
   background-color: #151724;
 }
 .fans {
+  margin-top: 10rem;
   float: left;
-  width: 4em;
-  height: 3em;
+  width: 62rem;
+  height: 15%;
   &-text {
     color: white;
     font-weight: bold;
-    font-size: 0.8em;
+    font-size: 15rem;
     text-align: center;
   }
   &-item {
     color: #b2b2b3;
-    font-size: 0.7em;
+    font-size:15rem;
     text-align: center;
   }
 }
 .button {
+  margin-top: 14rem;
   background-color:#3a3a46;
-  width: 6em;
+  width: 90rem;
   height: 2.5em;
   border-radius: 6px;
   color: white;
-  margin-left: 4em;
+  margin-left: 25rem;
+  font-size: 15rem;
 }
 // 个人简介
 .context {
-  margin-left: 1em;
-  margin-top: 1em;
+  margin-left: 16rem;
+  margin-top: 5%;
   &-info {
     color: #b2b2b3;
-    font-size: 0.7em;
+    font-size: 13rem;
   }
 }
 // 年龄 地址
 .area {
-  margin-left: 1em;
-  margin-top: 0.5em;
+  margin-left: 16rem;
+  margin-top: 3%;
   // line-height: 1em;
   color: #b2b2b3;
   &-age {
     border-radius: 5px;
     background-color: #3a3a46;
-    padding: 0.05em 0.05em 0.1em 0.05em;
-    // line-height: 0.5em;
+    padding:12rem;
+    line-height:13rem;
     &-img {
-      width: 0.7em;
-      height: 0.7em;
+      width: 12rem;
+      height: 12rem;
     }
     &-info {
-      margin-left: 0.2em;
-      font-size: 0.7em;
+      margin-left: 4rem;
+      font-size: 14rem;
     }
   }
   &-address {
@@ -279,42 +314,64 @@
     border-radius: 5px;
     padding: 0.3em;
     background-color: #3a3a46;
-    font-size: 0.7em;
+    font-size: 14rem;
   }
 }
-//抖音商城 我的音乐 我的群聊 查看更多
+// //抖音商城 我的音乐 我的群聊 查看更多
 
 .extraItem {
-  width: 6.22em;
-  height: 4em;
+  margin-bottom: 20rem;
+  margin-top: 6rem;
+  width: 93rem;
+  height: 10%;
   float: left;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   &-img {
-    width: 1.5em;
-    height: 1.5em;
+    width: 24rem;
+    height: 6.4%;
   }
   &-info {
     margin-top: 0.5em;
     color: #808080;
-    font-size: 0.8em;
+    font-size: 12rem;
   }
 }
-//作品 私密 喜欢 收藏
+// //作品 私密 喜欢 收藏
 .status {
-  margin-top: 4em;
+  margin-bottom: 10rem;
   &-item {
-    width: 8em;
-    height: 3em;
-    padding: 0.5em 2.11em 0.5em 2.11em;
+    width: 93rem;
+    height: 15%;
+    padding: 8rem 29rem 8rem 29rem;
     color: white;
+    font-size: 17rem;
     font-weight: bold;
   }
 }
 .active {
   border-bottom:2px solid #ffd700;
+}
+// 作品视频
+.works {
+  margin: 0;
+  width: 125rem;
+  height: 6vh; 
+  background-color: green;
+  
+}
+.works-vedio {
+    width: 125rem;
+    height: 6vh;
+  }
+.bottom {
+  width: 375rem;
+  height: 7vh;
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 </style>
 

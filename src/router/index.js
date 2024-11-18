@@ -28,6 +28,14 @@ const router = createRouter({
                     path: '/my',
                     component: () => import('@/views/My/MyPage.vue')
                 },
+                {
+                    path: '/info',
+                    component: () => import('@/views/My/MyInfo.vue')
+                },
+                {
+                    path:'/infoItem',
+                    component:()=>import('@/views/My/myInfoItem.vue')
+                }
             ]
         }
     ]
