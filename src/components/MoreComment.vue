@@ -7,19 +7,21 @@
         src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/></el-col>
     <el-col :span="16">
         <!-- 评论区主体 -->
-        <div class="name" >今天没烦恼</div>
+        <div class="name" >今天没烦恼 <el-tag effect="dark" type="danger" size="small" v-if="random() < 0.1" >作者</el-tag> </div>
         <div class="text">逼罗猫好可爱</div>
         <div class="time">2024-11-13&nbsp;&nbsp;江苏&nbsp;&nbsp;回复</div>
     </el-col>
     <el-col :span="5" >
         <!-- 点赞 -->
         <div class="likes">
-            <div class="likeImg">
-                <img src="@/assets/爱心4.png" alt="" class="love">
+            <div class="likeImg" @click="isLike =! isLike" >
+                <img v-if="isLike" src="@/assets/点赞的爱心.png" alt="" class="love">
+                <img v-else  src="@/assets/爱心4.png" alt="" class="love">
                 1234
             </div>
-            <div>
-                <img src="@/assets/心碎1.png" alt="" class="love">
+            <div @click="disLike = !disLike">
+                <img v-if="!disLike" src="@/assets/心碎1.png" alt="" class="love">
+                <img v-else src="@/assets/心碎.png" alt="" class="love">
             </div>
         </div>
     </el-col>
@@ -28,7 +30,7 @@
     <div v-show="biglist.length" v-for="ele in biglist" v-loading="ele.loading"  class="morethemore"  :key="ele.num" >
         <el-row v-if="!ele.loading" class="moreList">
             <el-col :span="3"></el-col>
-            <el-col  :span="21">
+            <el-col  :span="21" @click="console.log('被点击了')">
                 <el-row  v-for="i in ele.num" :key="i" class="extend">
                     <!-- 头像 -->
                     <el-col :span="2">
@@ -43,12 +45,14 @@
                     <el-col :span="6" >
                         <!-- 点赞 -->
                         <div class="likes ">
-                            <div class="likeImg ">
-                                <img src="@/assets/爱心4.png" alt="" class="love">
+                            <div class="likeImg" @click="isLike = !isLike" >
+                                <img v-if="isLike" src="@/assets/点赞的爱心.png" alt="" class="love">
+                                <img v-else  src="@/assets/爱心4.png" alt="" class="love">
                                 1234
                             </div>
-                            <div>
-                                <img src="@/assets/心碎1.png" alt="" class="love ">
+                             <div @click="disLike = !disLike">
+                                <img v-if="!disLike" src="@/assets/心碎1.png" alt="" class="love">
+                                <img v-else src="@/assets/心碎.png" alt="" class="love">
                             </div>
                         </div>
                     </el-col>
@@ -62,7 +66,10 @@
 <div @click="showMore(7)" class="more" v-else-if="!biglist[biglist.length - 1].loading">----&nbsp;&nbsp;展开更多&nbsp;&#9660;</div>
 </template>
 <script setup>
+import { random } from 'lodash';
 import { ref } from 'vue'
+const isLike = ref(false)
+const disLike = ref(false)
 const biglist = ref([])
 const showMore = (num) =>{
     biglist.value.push({

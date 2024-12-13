@@ -2,10 +2,12 @@
 import { ref ,defineProps} from 'vue'
 const randomNum = ref(0)
 const getRandom = () =>{
+    // 获得随机角度
     randomNum.value = Math.floor(Math.random() * 31) - 15
 }
 getRandom()
 const props = defineProps({
+    // 父组件传过来的X与Y坐标
     X:{
         type:Number,
         Required:true
@@ -19,10 +21,12 @@ const props = defineProps({
 
 <template>
 <!-- 向父级传递动画结束事件 -->
+<!-- 动画终止时发送信息 -->
+<!-- 在行内style定义--initial-rotate -->
 <img
-@animationend="$emit('onAnimationEnd')"
+@animationend="$emit('onAnimationEnd')" 
  src="@/assets/奶浓3.png" 
-alt="" 
+alt=""
 :style="{left:`${props.X}`, top:`${props.Y}`, '--initial-rotate': `${randomNum}deg`}"
 >
 </template>

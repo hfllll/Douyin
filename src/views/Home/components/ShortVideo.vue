@@ -1,6 +1,6 @@
 <script setup>
 import { ref, defineProps, defineExpose, onMounted, watch,onUnmounted} from 'vue';
-import LikeAnimation from '@/components/LikeAnimation.vue';
+import LikeAnimation from '@/components/Animations/LikeAnimation.vue';
 import eventBus from '@/eventBus';
 import { useCounterStore } from '@/stores/counter';
 // import { de } from 'element-plus/es/locale';
@@ -20,6 +20,7 @@ const rotationId = ref(null)
 // const secondClick = ref(false)
 // const delay = 250
 // likes并不是存放爱心的数组 而是爱心的指引数组
+const isFollow = ref(false)
 const likes = ref([])
 const likeRefs = ref([])
 const counterStore = useCounterStore()
@@ -140,8 +141,6 @@ const unmuteMusic = (e) =>{
 }
 // 使小心心变红
 const clickLike = (e, oneWay) =>{
-    console.log('我是爱心事件');
-    
     e.stopPropagation()
     const child = likeRefs.value[props.currentVideo]
     if (child.classList.contains('maskLayer-list-like'))
@@ -174,18 +173,11 @@ const addLikes = (e) =>{
 // 打开评论列表
 const showComment = (e) =>{
     e.stopPropagation(); // 防止其他事件干扰
-    console.log('打开评论区');
-    console.log('currentVideo:', props.currentVideo);
-    console.log('videoRefs:', videoRefs.value);
     eventBus.emit('showComment')
     videoRefs.value[props.currentVideo].style.maxHeight = '50%';
 }
 // 关闭抽屉随着扩大画面的函数
 const handleClose = () => {
-    console.log('关闭弹窗');
-    
-    console.log('currentVideo:', props.currentVideo);
-    console.log('videoRefs:', videoRefs.value);
     videoRefs.value[props.currentVideo].style.maxHeight = '100%'
 }
 const props = defineProps({
@@ -196,6 +188,12 @@ const props = defineProps({
         type: Number
     }
 })
+const gotoBlogger = () =>{
+    eventBus.emit('gotoBlogger')
+}
+const getFollow = () =>{
+    isFollow.value = true
+}
 // 暴露播放与暂停方法 由父级控制切换的播放
 defineExpose({
     play, stop
@@ -246,19 +244,19 @@ watch([isPlay, isMuted], ()=>{
         </el-icon>
 
         <!-- 遮罩层 -->
-        <div class="maskLayer">
+        <div class="maskLayer" :style="{'opacity':`${counterStore.videoOpacity}`}" >
             <!-- 爱心动画组 -->
-             <transition-group tag="div" v-if="props.currentVideo === index">
+            <transition-group tag="div" v-if="props.currentVideo === index">
                 <LikeAnimation
-                v-for="(item, index) in likes"
-                :key="item.key"
-                @onAnimationEnd="removeLike(index)"
-                :X="item.x"
-                :Y="item.y"
-                :style="{ top:`${item.y}px`, left:`${item.x}px`}"
-                >
+                    v-for="(item, index) in likes"
+                    :key="item.key"
+                    @onAnimationEnd="removeLike(index)"
+                    :X="item.x"
+                    :Y="item.y"
+                    :style="{ top:`${item.y}px`, left:`${item.x}px`}"
+                    >
                 </LikeAnimation>
-             </transition-group>
+            </transition-group>
             <!-- 进度条 -->
             <div class="progress"
             @pointerdown="onPointerdown" 
@@ -280,14 +278,25 @@ watch([isPlay, isMuted], ()=>{
                     }"
             ></div>
             <!-- 标题与简介 -->
-             <div class="maskLayer-title">
+             <div class="maskLayer-title" >
                 <h3>@我是香香🐂🍺</h3>
                 <p>你说爱像云 要自在飘浮才美丽</p>
              </div>
              <!-- 左侧按钮 -->
              <div class="maskLayer-list">
                 <!-- 头像 点赞 评论 收藏 转发 静音与音乐封面 -->
-                <div class="maskLayer-list-avatar box"></div>
+                <div class="maskLayer-list-avatar box" @click.stop="gotoBlogger"></div>
+                <div class="jiahao" 
+                    v-if="!isFollow"
+                    @click="getFollow" 
+                    :style="{'backgroundColor':'red', 'color':'white'}" >
+                    <span >＋</span>
+                </div>
+                <div class="jiahao" 
+                    v-else
+                    :style="{'backgroundColor':'white', 'color':'red'}" >
+                    <span >✔</span>
+                </div>
                 <div class="box" @click="clickLike($event, false)">
                     <div 
                     ref="likeRefs"
@@ -346,7 +355,6 @@ watch([isPlay, isMuted], ()=>{
     -webkit-user-select: none; /* 禁止长按触发默认交互 */
     -webkit-tap-highlight-color: transparent; /* 移除点击高亮 */
     touch-action: manipulation; /* 防止浏览器手势操作干扰 */
-
     transition: max-height 0.5s ease
 }
 
@@ -365,7 +373,7 @@ watch([isPlay, isMuted], ()=>{
         // background-color: red;
         &-list{
             position: absolute;
-            right: 10rem;
+            right: 3rem;
             bottom: calc(var(--vh, 1vh) * 2 );
             gap: calc(var(--vh, 1vh) * 4 );
             display: flex;
@@ -390,6 +398,17 @@ watch([isPlay, isMuted], ()=>{
                 border-radius: 50%;
                 background-image: url('/public/images/健身头像.jpg');
                 background-size: contain; // 图片居中显示
+            }
+            .jiahao{
+                position: absolute;
+                top: calc(var(--vh, 1vh) * 7 );
+                right: calc(var(--vh, 1vh) * 3.5 ) ;
+                transform: translate(50%,-50%);
+                border-radius: 10rem;
+                height: 18rem;
+                width: 18rem;
+                font-size: 18rem;
+                line-height: 18rem;
             }
             &-like{
                 background-image: url('/src/assets/爱心.png');
@@ -436,8 +455,9 @@ watch([isPlay, isMuted], ()=>{
                 background-position: center; // 使图片覆盖整个容器
                 background-repeat: no-repeat;
                 background-size: contain; // 图片居中显示
-                width: 80%; 
-                height: 80%;
+                margin: 0 auto;
+                width: 70%; 
+                height: 70%;
             }
         }
         &-title{
@@ -446,14 +466,14 @@ watch([isPlay, isMuted], ()=>{
             left: 8rem;
             text-align: left;
             p{
-                font-size: 12rem;
-                line-height: 14rem;
+                font-size: 16rem;
+                line-height: 12rem;
                 height: 25rem;
             }
             h3{
                 line-height: 1rem;
-                height: 16rem;
-                font-size: 15rem;
+                height: 25rem;
+                font-size: 19rem;
             }
         }
         .progress{

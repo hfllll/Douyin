@@ -1,15 +1,21 @@
 <script setup>
-// import { Expand, Search } from '@element-plus/icons-vue/dist/types';
+import _ from 'lodash'
 import  { ref, onMounted } from 'vue'
 import ShortVideo from './components/ShortVideo.vue';
 import BottomTabBar from '@/components/BottomTabBar.vue';
 import CommentArea from '@/components/CommentArea.vue';
 import { useCounterStore } from '@/stores/counter';
-const currentPage = ref(5)
+import BloggerHome from '@/components/BloggerHome.vue';
+import BadgeItem from '@/components/Widgets/BadgeItem.vue';
+import ExperiencePage from './components/ExperiencePage.vue';
+import DetailGoods from '@/components/DetailGoods.vue';
+import eventBus from '@/eventBus';
+const currentPage = ref(4)
 const currentVideo = ref(0)
 const videoHeight = ref(0)
-const translateX = ref(-200/3)
+const translateX = ref(-150/3)
 const bigTranslateX = ref(-25.92)
+// const bigTranslateX = ref(0)
 const isDown = ref(false)
 const currentX = ref(0)
 const currentY = ref(0)
@@ -20,10 +26,10 @@ const prevTY = ref(0)
 const time = ref(0)
 const witchWay =ref(false) // 界面切换方向
 const topTabs = ref(['热点', '长视频', '关注', '经验', '推荐']) //顶部导航标志
-const activeTopTab = ref(4)  // 默认选中第五页
+const activeTopTab = ref(3)  // 默认选中第五页
 const videoTranslateY = ref(0) // 短视频div的位移
-const topTabPosition = ref([90/6, 195/6, 293/6, 386/6, 478/6])  // 点击不同顶部tab，下划线应该对应的位置
-const lineLeftPosition = ref(topTabPosition.value[4]) // 顶部导航下划线的位置
+const topTabPosition = ref([75/6, 180/6, 290/6, 380/6, 478/6])  // 点击不同顶部tab，下划线应该对应的位置
+const lineLeftPosition = ref(topTabPosition.value[3]) // 顶部导航下划线的位置
 const isTogglePlay = ref() // 判断是否是开关视频播放
 const videoRef = ref(null)
 const topTabClick = (index) =>{
@@ -34,7 +40,7 @@ const topTabClick = (index) =>{
 }
 const onPointerdown = (e) => {
     console.log('鼠标按下');
-    
+
     // 一开始假设成
     isTogglePlay.value = true
     // 记录一开始的    
@@ -69,8 +75,7 @@ const onPointermove = (e) => {
             if (witchWay.value === 'HORIZONTAL'){
                 // 边界处理
                 const disBetMove = e.clientX - currentX.value
-                if ((disBetMove > 0 && currentPage.value === 1) || 
-                (disBetMove < 0 && currentPage.value === 6) ) return
+                if ((disBetMove > 0 && currentPage.value === 1) || (disBetMove < 0 && currentPage.value === 6)) return
 
                 translateX.value += disBetMove / 24
                 if (disBetMove < 0){
@@ -82,14 +87,21 @@ const onPointermove = (e) => {
                     lineLeftPosition.value -= (disBetTab / 100) * (disBetMove / 4)
                 }
             }
-            else videoTranslateY.value += 100 * (e.clientY - currentY.value) / videoHeight.value
+            else {
+                videoTranslateY.value += 100 * (e.clientY - currentY.value) / videoHeight.value
+                // 上下滑动时 遮罩层变淡的效果
+                if (counterStore.videoOpacity > 0.35) {
+                    counterStore.videoOpacity-=0.02
+                }
+            }
             currentX.value = e.clientX
             currentY.value = e.clientY
         }
     }
 }
+// 使用到状态管理根据pinia了
 const counterStore = useCounterStore()
-const onPointerup = () =>{
+const onPointerup = () => {
     console.log('鼠标抬起');
     const horizontalGap = translateX.value - prevTX.value
     const verticalGap = videoTranslateY.value - prevTY.value
@@ -103,6 +115,7 @@ const onPointerup = () =>{
     if (witchWay.value === 'HORIZONTAL'){
         // 向左or向右
         if ( (nowTime - time.value < 400 && horizontalGap )  || Math.abs( horizontalGap ) > 100/18){
+            
             currentPage.value += (horizontalGap > 0 ? -1 : 1)
             activeTopTab.value += (horizontalGap > 0 ? -1 : 1)
 
@@ -120,14 +133,20 @@ const onPointerup = () =>{
             if (verticalGap > 0){
                 // 切换到了上一个视频
                 // counterStore.videoSources[0]
+
             }else{
                 // 切换到了下一个视频
-                counterStore.videoSources.push(counterStore.videoSources[currentVideo.value])
+                if(counterStore.videoSources.length - currentVideo.value === 4){
+                    counterStore.videoSources.push(counterStore.videoSources[currentVideo.value])
+                }
+                // 解决方法：将currentVideo设为一个对象 包含当前下标还有是否已经被push过
             }
             currentVideo.value += (verticalGap > 0 ? -1 : 1)
             videoRef.value.play(currentVideo.value, true)
         }
         else videoTranslateY.value = prevTY.value
+        // 遮罩层在滑动结束后变正常的效果
+        counterStore.videoOpacity = 1
     }
     witchWay.value = ''
 
@@ -135,22 +154,40 @@ const onPointerup = () =>{
     document.removeEventListener('pointerup', onPointerup)
     document.removeEventListener('pointermove', onPointermove)
 }
+const handleBlogger = () =>{
+    translateX.value = -100* 5 / 6
+    currentPage.value ++
+}
+// 经验页面的防抖函数
+const expecienceScroll = _.debounce((e) => {
+    const page = e.target;
+    if (page.scrollTop + page.clientHeight > page.scrollHeight - 30) {
+        eventBus.emit('experienceScroll');
+    }
+}, 200); 
 onMounted( () => {
     videoHeight.value = document.querySelector('.short-video-container').clientHeight
+    eventBus.on('gotoBlogger', handleBlogger)
 })
 </script>
 
 <template>
 <div class="container" @pointerdown="onPointerdown">
-    <div class="father"
-    >
+    <div class="father">
+        <!-- 中间的轮播部分 -->
         <div class="swiper" :style="{ transform: 'translateX(' + bigTranslateX + '%)' }">
+            <!-- 左侧的小组件 -->
             <div class="widget" style="background-color: gray;" >
                 我是最左侧的小组件
             </div>
+            <!-- 中间的轮播图 -->
             <div class="page-list">
-                <div class="top-nav">
-                    <div class="icon-nav"><el-icon :size="20"><Expand /></el-icon></div>
+                <!-- 顶部导航部分 -->
+                <div class="top-nav" v-show="currentPage !== 6">
+                    <div class="icon-nav">
+                        <el-icon :size="20"><Expand /></el-icon>
+                        <BadgeItem>38</BadgeItem>
+                    </div>
                     <button 
                     v-for="(tab, index) in topTabs" 
                     :key="index" 
@@ -160,28 +197,49 @@ onMounted( () => {
 
                     <div class="icon-nav"><el-icon :size="20"><Search/></el-icon></div>
                 </div>
+                <!-- 所有的子页面们 -->
                 <div class="box" :style="{ transform: 'translateX(' + translateX + '%)' }">
+                    <!-- 热点页面 -->
                     <div class="son" style="background-color: yellow;">热点</div>
-                    <div class="son" style="background-color: blue;" > 长视频</div>
-                    <div class="son" style="background-color: gray;" >我的关注</div>
-                    <div class="son" style="background-color: #5b2c6f ;" >经验页面</div>
+                    <!-- 长视频 -->
+                    <div class="son" style="background-color: blue;" >长视频</div>
+                    <!-- 关注页面 -->
+                    <div class="son" style="background-color: gray;" >关注</div>
+                    <!-- 经验页面 -->
+                    <div class="son" 
+                        @scroll="expecienceScroll"
+                        style="background-color: #151724;
+                        -webkit-overflow-scrolling: touch; /* 保持流畅的滚动体验 */
+                        touch-action: pan-y ; /* 允许水平手势滚动 */
+                        overflow-y: scroll;">
+                        <ExperiencePage></ExperiencePage>
+                    </div>
+                    <!-- 短视频下滑主页 -->
                     <div class="son" >
                         <div class="short-video-container" :style="{ transform: 'translateY(' + videoTranslateY + '%)' }">
-
-                            <ShortVideo :isTogglePlay="isTogglePlay"
-                             :currentVideo="currentVideo" ref="videoRef" ></ShortVideo>
+                            <ShortVideo 
+                                :isTogglePlay="isTogglePlay"
+                                :currentVideo="currentVideo" 
+                                ref="videoRef" >
+                            </ShortVideo>
                         </div>
                     </div>
-                    <div class="son" style="background-color: #873600 ;">博主主页</div>
+                    <!-- 博主主页 -->
+                    <div class="son blog"  style="background-color: #873600 ;">
+                        <BloggerHome @returnPage="topTabClick(4)"></BloggerHome>
+                    </div>
                 </div>
-                <BottomTabBar></BottomTabBar>
+                <BottomTabBar v-if="currentPage !== 6" ></BottomTabBar>
             </div>
+            <!-- 没用的搜索页 -->
             <div class="search" style="background-color: pink;">
                 我是最右侧的搜索
             </div>
         </div>
         <!-- 评论区内容 -->
         <CommentArea class="comment"></CommentArea>
+        <!-- 视频详细页 -->
+        <detailGoods></detailGoods>
     </div>
 </div>
 </template>
@@ -224,19 +282,20 @@ onMounted( () => {
                 // overflow: hidden;
                 .top-nav{
                     font-weight: 600;
-                    width: 100%;
+                    width: 95%;
                     height: 6%;
                     top: 0rem;
+                    left: 2.5%;
                     display: flex;
                     justify-content: space-between;
                     color: #A3A6AD;
                     align-items: center;
                     position: absolute;
-                    z-index: 2;
+                    z-index: 1;
                     user-select: none;
                     button{
                         font-weight: 600;
-                        font-size: 13rem;
+                        font-size: 16rem;
                         color: #A3A6AD;
                         border: none;
                         background-color: transparent
@@ -246,12 +305,13 @@ onMounted( () => {
                     }
                     .icon-nav{
                         // 图标无法使用context-cente 所以单独设置margin-top
-                        margin-top: 6rem;
+                        // margin-top: 6rem;
+                        position: relative;
                     }
                     .top-nav-bottom-line{
                         position: absolute;
-                        bottom: 1rem;
-                        width: 20rem;
+                        bottom: 6rem;
+                        width: 30rem;
                         height: 2.2rem;
                         border-radius: 3rem;
                         background-color: #fff;
@@ -266,7 +326,9 @@ onMounted( () => {
                     transition: transform 0.3s ease;
                     height: 93%;
                     .son{
-                        line-height: calc(var(--vh, 1vh) * 93);
+                        &::-webkit-scrollbar{
+                            display: none;
+                        }
                         text-align: center;
                         user-select: none;
                         width: 375rem;
@@ -274,6 +336,11 @@ onMounted( () => {
                         overflow: hidden;
                         border-radius: 0rem 0rem 4rem 4rem;
                         position: relative;
+                        font-size: 12rem;
+                    }
+                    .blog{
+                        position: relative;
+                        height: 100vh;
                     }
                 }
             }

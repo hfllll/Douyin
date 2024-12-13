@@ -1,4 +1,5 @@
 <template>
+  <!-- before-leave：退出动画开始时触发 -->
   <transition name="fade" @before-leave="handleBeforeLeave">
     <!-- 整个页面：带有上方留白 -->
   <div
@@ -25,11 +26,13 @@
         <div v-for="i in 7" :key="i">
           <MoreComment></MoreComment>
         </div>
+        <!-- 暂时没有更多评论了部分 -->
+        <div class="nomore">暂时没有更多了</div>
       </div>
       <!-- 我是输入框 -->
-      <div v-if="!loading" class="commentInput">
-          我是输入框
-      </div>
+       <div v-if="!loading" class="commentInput">
+         <InputItem></InputItem>
+       </div>
     </div>
   </div>
   </transition>
@@ -39,11 +42,11 @@
 import { ref,  onMounted, onUnmounted } from 'vue'
 import MoreComment from './MoreComment.vue';
 import eventBus from '@/eventBus';
+import InputItem from './Widgets/InputItem.vue';
 const drawer = ref(false)
 const loading = ref(true)
 const commentarea = ref(null)
 const showCommentDrawer = () => {
-  console.log('弹窗toggle被触发');
   drawer.value = !drawer.value
   if(!drawer.value){
     // 如果是关闭抽屉 传播关闭事件
@@ -51,8 +54,8 @@ const showCommentDrawer = () => {
   }
 }
 
+// 确保在消失动画开始时移除 appear 动画
 const handleBeforeLeave = (el) => {
-  // 确保在消失动画开始时移除 appear 动画
   el.querySelector('.comment').style.animation = 'disappear 0.5s ease forwards'
 }
 
@@ -104,6 +107,7 @@ onUnmounted(() => {
   .comment {
       right: 0;
       bottom: 0;
+      
       position: absolute;
       width: 100%;
       height: 65%;
@@ -128,8 +132,40 @@ onUnmounted(() => {
           }
         }
         .commentInput{
-            height: 10%;
+          height: 10%;
+          border-top: #CFD3DC 1rem solid ;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          .input{
+            padding-left: 6rem;
+            width: 95vw;
+            height: 80%;
+            border-radius: 20rem;
+            background-color: #E5EAF3;
+            display: flex;
+            align-items: center;
+            color: #636466;
+            font-size: 14rem;
+            .text{
+              width: 65%;
+              text-align: left;
+            }
+            img{
+              margin-left: 4%;
+              width: 22rem;
+              height: 22rem;
+              // vertical-align: baseline;
+            }
+          }
         }
+  }
+  .nomore{
+    color: gray;
+    font-size: 12rem;
+    line-height: 40rem;
+    text-align: center;
+    height: 40rem;
   }
 }
 

@@ -17,6 +17,10 @@ const router = createRouter({
                     component: () => import('@/views/Shop/ShopPage.vue')
                 },
                 {
+                    path: '/detailVideo',
+                    component: () => import('@/views/Home/DetailVideo.vue')
+                },
+                {
                     path: '/publish',
                     component: () => import('@/views/Publish/PublishPage.vue')
                 },
