@@ -48,8 +48,10 @@ export const useCounterStore = defineStore('counter' , {
             "加油练，明天休",
             "",
         ],
-        // 经验页面 大容器的左间距 用于兼容pc端
-        experienceContainerLeft:0
+        // 经验页面的大容器的左间距 后来改成pc端用到左视窗的距离
+        experienceContainerLeft:0,
+        // home页面的swiper下标
+        homePageIndex : 5
     }),
     actions:{}
 })

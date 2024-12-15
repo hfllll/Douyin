@@ -33,19 +33,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import ExpericeCard from '../widgets/ExpericeCard.vue';
 import eventBus from '@/eventBus';
-import { useCounterStore } from '@/stores/counter';
 const containerRef = ref(null)
 const numArr = ref(3)
-const counterStore = useCounterStore()
-onMounted(() =>{
-    const left = containerRef.value.getBoundingClientRect().left
-    counterStore.experienceContainerLeft = left
-})
 eventBus.on('experienceScroll', () => {
-    numArr.value += 2
+    numArr.value += 3
 })
 </script>
 
@@ -81,7 +75,6 @@ eventBus.on('experienceScroll', () => {
 .container{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    // gap: 10rem;
     .column{
         display: flex;
         flex-direction: column;

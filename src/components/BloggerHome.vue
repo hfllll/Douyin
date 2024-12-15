@@ -144,6 +144,7 @@
 import { onMounted, onUnmounted, ref,watch } from 'vue';
 import OpenvideoAnimation from './Animations/OpenvideoAnimation.vue';
 import router from '@/router';
+import { useCounterStore } from '@/stores/counter';
 const background = ref(null)
 const isTop = ref(false)
 const container = ref(null)
@@ -158,6 +159,7 @@ const photoSize = ref(70)
 const scrollTop = ref()
 const isStartAnimation = ref(false)
 const clickObj = ref({})
+const counterStore = useCounterStore()
 // 打开动画函数 
 const openVideo = (e) =>{
     const target = e.target
@@ -168,6 +170,7 @@ const openVideo = (e) =>{
         top: rect.top,
         right: rect.right
     }
+    counterStore.homePageIndex = 6
     // 用v-if触发动画
     isStartAnimation.value = true
 }

@@ -10,11 +10,13 @@ import BadgeItem from '@/components/Widgets/BadgeItem.vue';
 import ExperiencePage from './components/ExperiencePage.vue';
 import DetailGoods from '@/components/DetailGoods.vue';
 import eventBus from '@/eventBus';
-const currentPage = ref(4)
+const counterStore = useCounterStore()
+const currentPage = ref(counterStore.homePageIndex)
 const currentVideo = ref(0)
 const videoHeight = ref(0)
-const translateX = ref(-150/3)
+const translateX = ref(-(counterStore.homePageIndex - 1) * 50 / 3)
 const bigTranslateX = ref(-25.92)
+const fatherRef = ref(null)
 // const bigTranslateX = ref(0)
 const isDown = ref(false)
 const currentX = ref(0)
@@ -26,10 +28,10 @@ const prevTY = ref(0)
 const time = ref(0)
 const witchWay =ref(false) // 界面切换方向
 const topTabs = ref(['热点', '长视频', '关注', '经验', '推荐']) //顶部导航标志
-const activeTopTab = ref(3)  // 默认选中第五页
+const activeTopTab = ref(counterStore.homePageIndex -1)  // 默认选中第五页
 const videoTranslateY = ref(0) // 短视频div的位移
 const topTabPosition = ref([75/6, 180/6, 290/6, 380/6, 478/6])  // 点击不同顶部tab，下划线应该对应的位置
-const lineLeftPosition = ref(topTabPosition.value[3]) // 顶部导航下划线的位置
+const lineLeftPosition = ref(topTabPosition.value[counterStore.homePageIndex -1]) // 顶部导航下划线的位置
 const isTogglePlay = ref() // 判断是否是开关视频播放
 const videoRef = ref(null)
 const topTabClick = (index) =>{
@@ -99,8 +101,7 @@ const onPointermove = (e) => {
         }
     }
 }
-// 使用到状态管理根据pinia了
-const counterStore = useCounterStore()
+
 const onPointerup = () => {
     console.log('鼠标抬起');
     const horizontalGap = translateX.value - prevTX.value
@@ -158,22 +159,28 @@ const handleBlogger = () =>{
     translateX.value = -100* 5 / 6
     currentPage.value ++
 }
-// 经验页面的防抖函数
+// 经验页面的防抖函数 滑动到距离底部还有50时 加载新的card
 const expecienceScroll = _.debounce((e) => {
     const page = e.target;
-    if (page.scrollTop + page.clientHeight > page.scrollHeight - 30) {
+    if (page.scrollTop + page.clientHeight > page.scrollHeight - 50) {
         eventBus.emit('experienceScroll');
     }
 }, 200); 
 onMounted( () => {
+    // console.log(currentPage.value,translateX.value,activeTopTab.value ,lineLeftPosition.value);
+    
     videoHeight.value = document.querySelector('.short-video-container').clientHeight
     eventBus.on('gotoBlogger', handleBlogger)
+    const left = fatherRef.value.getBoundingClientRect().left
+    counterStore.experienceContainerLeft = left
+    
+    // console.log(currentPage.value,translateX.value,activeTopTab.value ,lineLeftPosition.value);
 })
 </script>
 
 <template>
 <div class="container" @pointerdown="onPointerdown">
-    <div class="father">
+    <div class="father" ref="fatherRef">
         <!-- 中间的轮播部分 -->
         <div class="swiper" :style="{ transform: 'translateX(' + bigTranslateX + '%)' }">
             <!-- 左侧的小组件 -->

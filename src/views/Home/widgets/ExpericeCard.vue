@@ -45,7 +45,8 @@ const handleClick = () =>{
         ImgUrl:imgUrl,
         Text:text,
         top:rect.top,
-        left:rect.left - counterStore.experienceContainerLeft
+        left:rect.left - counterStore.experienceContainerLeft,
+        height:rect.height
     })
 }
 </script>
