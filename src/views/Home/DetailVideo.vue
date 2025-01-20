@@ -1,5 +1,5 @@
 <template>
-<div class="container">
+<div class="container " >
     <!-- father相当于视窗 -->
     <div class="father">
         <!-- 中间视频区 -->

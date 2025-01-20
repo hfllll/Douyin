@@ -1,6 +1,6 @@
 <script setup>
 import _ from 'lodash'
-import  { ref, onMounted } from 'vue'
+import  { ref, onMounted, computed } from 'vue'
 import ShortVideo from './components/ShortVideo.vue';
 import BottomTabBar from '@/components/BottomTabBar.vue';
 import CommentArea from '@/components/CommentArea.vue';
@@ -9,6 +9,7 @@ import BloggerHome from '@/components/BloggerHome.vue';
 import BadgeItem from '@/components/Widgets/BadgeItem.vue';
 import ExperiencePage from './components/ExperiencePage.vue';
 import DetailGoods from '@/components/DetailGoods.vue';
+import LongVideo from './components/LongVideo.vue'
 import eventBus from '@/eventBus';
 const counterStore = useCounterStore()
 const currentPage = ref(counterStore.homePageIndex)
@@ -34,6 +35,7 @@ const topTabPosition = ref([75/6, 180/6, 290/6, 380/6, 478/6])  // 点击不同�
 const lineLeftPosition = ref(topTabPosition.value[counterStore.homePageIndex -1]) // 顶部导航下划线的位置
 const isTogglePlay = ref() // 判断是否是开关视频播放
 const videoRef = ref(null)
+const isLongVideoPage = computed(() => currentPage.value === 2) // 假设长视频页面是第二个页面
 const topTabClick = (index) =>{
     activeTopTab.value = index
     lineLeftPosition.value = topTabPosition.value[index]
@@ -179,76 +181,79 @@ onMounted( () => {
 </script>
 
 <template>
-<div class="container" @pointerdown="onPointerdown">
-    <div class="father" ref="fatherRef">
-        <!-- 中间的轮播部分 -->
-        <div class="swiper" :style="{ transform: 'translateX(' + bigTranslateX + '%)' }">
-            <!-- 左侧的小组件 -->
-            <div class="widget" style="background-color: gray;" >
-                我是最左侧的小组件
-            </div>
-            <!-- 中间的轮播图 -->
-            <div class="page-list">
-                <!-- 顶部导航部分 -->
-                <div class="top-nav" v-show="currentPage !== 6">
-                    <div class="icon-nav">
-                        <el-icon :size="20"><Expand /></el-icon>
-                        <BadgeItem>38</BadgeItem>
-                    </div>
-                    <button 
-                    v-for="(tab, index) in topTabs" 
-                    :key="index" 
-                    :class="{'top-tab-active': activeTopTab === index}"
-                    @click="topTabClick(index)">{{ tab }}</button>
-                    <div class="top-nav-bottom-line" :style="{ left: lineLeftPosition + '%' }"></div>
-
-                    <div class="icon-nav"><el-icon :size="20"><Search/></el-icon></div>
+    <div class="containered" @pointerdown="onPointerdown">
+        <div class="father" ref="fatherRef">
+            <!-- 中间的轮播部分 -->
+            <div class="swiper" :style="{ transform: 'translateX(' + bigTranslateX + '%)' }">
+                <!-- 左侧的小组件 -->
+                <div class="widget" style="background-color: gray;">
+                    我是最左侧的小组件
                 </div>
-                <!-- 所有的子页面们 -->
-                <div class="box" :style="{ transform: 'translateX(' + translateX + '%)' }">
-                    <!-- 热点页面 -->
-                    <div class="son" style="background-color: yellow;">热点</div>
-                    <!-- 长视频 -->
-                    <div class="son" style="background-color: blue;" >长视频</div>
-                    <!-- 关注页面 -->
-                    <div class="son" style="background-color: gray;" >关注</div>
-                    <!-- 经验页面 -->
-                    <div class="son" 
-                        @scroll="expecienceScroll"
-                        style="background-color: #151724;
+                <!-- 中间的轮播图 -->
+                <div class="page-list">
+                    <!-- 顶部导航部分 -->
+                    <div class="top-nav" v-show="currentPage !== 6">
+                        <div class="icon-nav">
+                            <el-icon :size="20">
+                                <Expand />
+                            </el-icon>
+                            <BadgeItem>38</BadgeItem>
+                        </div>
+                        <button v-for="(tab, index) in topTabs" :key="index"
+                            :class="{'top-tab-active': activeTopTab === index}" @click="topTabClick(index)">{{ tab
+                            }}</button>
+                        <div class="top-nav-bottom-line" :style="{ left: lineLeftPosition + '%' }"></div>
+
+                        <div class="icon-nav"><el-icon :size="20">
+                                <Search />
+                            </el-icon></div>
+                    </div>
+                    <!-- 所有的子页面们 -->
+                    <div class="box" :style="{ transform: 'translateX(' + translateX + '%)' }">
+                        <!-- 热点页面 -->
+                        <div class="son" style="background-color: yellow;">热点</div>
+                        <!-- 长视频 -->
+                        <div class="son" style="background-color: blue;
+                         -webkit-overflow-scrolling: touch; /* 保持流畅的滚动体验 */
+                        touch-action: pan-y ; /* 允许水平手势滚动 */
+                        overflow-y: scroll;">
+                            <LongVideo v-if="isLongVideoPage"></LongVideo>
+                        </div>
+                        <!-- 关注页面 -->
+                        <div class="son" style="background-color: gray;">关注</div>
+                        <!-- 经验页面 -->
+                        <div class="son" @scroll="expecienceScroll" style="background-color: #151724;
                         -webkit-overflow-scrolling: touch; /* 保持流畅的滚动体验 */
                         touch-action: pan-y ; /* 允许水平手势滚动 */
                         overflow-y: scroll;">
-                        <ExperiencePage></ExperiencePage>
-                    </div>
-                    <!-- 短视频下滑主页 -->
-                    <div class="son" >
-                        <div class="short-video-container" :style="{ transform: 'translateY(' + videoTranslateY + '%)' }">
-                            <ShortVideo 
-                                :isTogglePlay="isTogglePlay"
-                                :currentVideo="currentVideo" 
-                                ref="videoRef" >
-                            </ShortVideo>
+                            <ExperiencePage></ExperiencePage>
+                        </div>
+                        <!-- 短视频下滑主页 -->
+                        <div class="son">
+                            <div class="short-video-container"
+                                :style="{ transform: 'translateY(' + videoTranslateY + '%)' }">
+                                <ShortVideo :isTogglePlay="isTogglePlay" :currentVideo="currentVideo" ref="videoRef">
+                                </ShortVideo>
+                            </div>
+                        </div>
+                        <!-- 博主主页 -->
+                        <div class="son blog" style="background-color: #873600 ;">
+                            <BloggerHome @returnPage="topTabClick(4)"></BloggerHome>
                         </div>
                     </div>
-                    <!-- 博主主页 -->
-                    <div class="son blog"  style="background-color: #873600 ;">
-                        <BloggerHome @returnPage="topTabClick(4)"></BloggerHome>
-                    </div>
+                    <BottomTabBar v-if="currentPage !== 6"></BottomTabBar>
                 </div>
-                <BottomTabBar v-if="currentPage !== 6" ></BottomTabBar>
+                <!-- 没用的搜索页 -->
+                <div class="search" style="background-color: pink;">
+                    我是最右侧的搜索
+                </div>
             </div>
-            <!-- 没用的搜索页 -->
-            <div class="search" style="background-color: pink;">
-                我是最右侧的搜索
-            </div>
+            <!-- 评论区内容 -->
+            <CommentArea class="comment"></CommentArea>
+            <!-- 视频详细页 -->
+            <detailGoods></detailGoods>
         </div>
-        <!-- 评论区内容 -->
-        <CommentArea class="comment"></CommentArea>
-        <!-- 视频详细页 -->
-        <detailGoods></detailGoods>
     </div>
-</div>
 </template>
 
 <style lang="scss" scoped>
@@ -257,15 +262,16 @@ onMounted( () => {
         transition: transform 0.3s ease;
         width: 375rem;
     }
-    .container{
+    .containered{
         touch-action: none;
         width: 100vw;
         // 在这里开始使用动态的vh值
         height: calc(var(--vh, 1vh) * 100);
         background-color: #1c2833;
+        
     }
     .father{
-        background-color: black;
+        background: linear-gradient(to bottom, #1a1a1a, #000);
         position: relative;
         width: 375rem;
         height: 100%;

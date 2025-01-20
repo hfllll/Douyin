@@ -1,6 +1,7 @@
 <template>
 <div 
     class="box" 
+    @pointerdown.stop
     :style="{
         'height':`${Height}px`,
         'top':`${Top}px`, 
@@ -18,16 +19,74 @@
 
     <!-- 图片容器 -->
     <div class="img-container" 
+        v-show="isLoaded"
         @animationend="mationEnd"
         @animationstart="mationStart"
         :class="{
             'imgMation':isMation,
             'imgReverse':returnMation
-        }" 
-        v-show="isLoaded">
-        <img @load=" loadImg" :src=imgUrl alt="">
-    </div>
+        }" >
+        <!-- 主图片 -->
+        <img 
+          v-show="imgToggler"
+          @load=" loadImg" 
+          :src=imgUrl 
+          :style="{
+            'opacity':`${imgTransparency}`
+            }"
+          class="Img"  
+          alt="">
+        <!-- 走马灯 轮播图 -->
+        <CarouselItem 
+          ref="carouselRef"
+          v-show="!imgToggler"
+          :slide-num="5" 
+          :slide-height="'100%'" 
+          :slide-width="'100%'"
+          >
+          <template #slide-1>
+            <img 
+              class="Img" 
+              :src=imgUrl 
+              alt="">
+          </template>
+          <template #slide-2>
+            <img 
+              class="Img" 
+              :src=imgArr[1]
+              alt="">
+          </template>
+          <template #slide-3>
+            <img 
+              class="Img" 
+              :src="imgArr[2]"
+              alt="">
+          </template>
+          <template #slide-4>
+            <img 
+              class="Img" 
+              :src="imgArr[3]"
+              alt="">
+          </template>
+          <template #slide-5>
+            <img 
+              class="Img" 
+              :src="imgArr[4]"
+              alt="">
+          </template>
+        </CarouselItem>
 
+        <!-- 底部 -->
+         <div class="indicator-bar">
+            <div 
+              class="indicator" 
+              v-for="i in 5" 
+              :class="{'active':carouselRef?.SlideData.curIdx >= i}" 
+              :key="i">
+            </div>
+         </div>
+    </div>
+    
     <!-- 底部内容 -->
     <div class="bottom" v-show="!isShowDetail">
         <!-- 标题 -->
@@ -47,7 +106,7 @@
         </div>
     </div>
 
-<!-- 从这开始是放大后的内容 -->
+    <!-- 从这开始是放大后的内容 -->
     <!-- 退出按钮 -->
     <div class="header" v-show="isShowDetail">
         <div class="returnSign" @click="returnPage" >
@@ -116,6 +175,7 @@
 
 <script setup>
 import eventBus from '@/eventBus';
+import CarouselItem from '@/components/Widgets/CarouselItem.vue';
 import { ref } from 'vue'
 const toolPosition = ref('absolute')
 const Height = ref(0)
@@ -128,19 +188,31 @@ const isLoaded = ref(false)
 const Top = ref(0)
 const Left = ref(0)
 const zIndex = ref(-1)
+const imgToggler = ref(true)
+const carouselRef = ref(null)
+const imgTransparency = ref(1)
+const imgArr = ref([
+    '',
+    'https://dy.ttentau.top/images/PVsXBJtIjpTlsFiEB8qdW.png',
+    'https://dy.ttentau.top/images/xAuYUthjV8pjVQ88Qgj4F.png',
+    'https://dy.ttentau.top/images/W2mEsKdoQFh9UfeHaUM0c.png',
+    'https://dy.ttentau.top/images/oqY4yAaW77boi9EfPuYkU.png'
+])
 const loadImg = () =>{
     isLoaded.value = true
 }
 // 动画结束函数
 const mationEnd = () =>{
-    console.log(123);
     // 开启动画结束时 底部工具栏设为绝对定位
     if (isMation.value){
         toolPosition.value = 'fixed'
+        // 同时展现轮播图 隐藏图片
+        imgToggler.value = false
     }
     //关闭动画结束时 隐藏卡片
     if (!isMation.value){
         zIndex.value = -1
+        
     }
 }
 // 动画开始函数
@@ -148,27 +220,39 @@ const mationStart = () =>{
     if (isMation.value){
         // 开启动画开始时 100ms后显示详细信息
         setTimeout(() =>{
-            
             isShowDetail.value = true
-        }, 100)
+        }, 150)
     }
     if (!isMation.value){
-        // 关闭动画开始时 隐藏详细信息
+        const carousel = carouselRef.value
+        // 关闭动画开始时 隐藏详细信息 改变底部栏子定位
         isShowDetail.value = false
         toolPosition.value = 'absolute'
+        // 同时 隐藏轮播图 展现图片
+        const oldUrl = imgUrl.value
+        imgUrl.value = imgArr.value[carousel.SlideData.curIdx-1]
+        imgToggler.value = true
+        carousel.SwitchMethod(1, 'auto')
+        setTimeout(() =>{
+            imgUrl.value = oldUrl
+        },150)
     }
 }
 // 将启动动画类变量设为false 将关闭动画类变量设为true
 const returnPage = () => {
+    // const carousel = carouselRef.value
+    // carousel.SwitchMethod(1, 'auto')
     isMation.value = false
     returnMation.value = true
 }
 // 进入页面函数
 eventBus.on('showGoodsDetail', ({Text, ImgUrl, top, height,left}) =>{
+    // 重置轮播图 回到第一张图
     zIndex.value = 2
     isMation.value = true
     returnMation.value = false
     text.value = Text
+    imgArr.value[0] = ImgUrl
     imgUrl.value = ImgUrl
     Top.value = top
     Left.value = left
@@ -178,8 +262,6 @@ eventBus.on('showGoodsDetail', ({Text, ImgUrl, top, height,left}) =>{
 
 <style lang="scss" scoped>
 .toolbar{
-    // width: 100%;
-    // max-width: 375rem;
     width: 375rem;
     height: 8.5%;
     background-color: #151515;
@@ -205,9 +287,6 @@ eventBus.on('showGoodsDetail', ({Text, ImgUrl, top, height,left}) =>{
             img{
                 width: 24rem;
                 height: 24rem;
-            }
-            .text{
-
             }
         }
     }
@@ -347,11 +426,18 @@ img{
 // 图片放大动画
 @keyframes imgScale {
     0%{
+        opacity: 1;
         height: 230rem;
         border-radius: 5rem 5rem 0rem 0rem;
     }
+    40%{
+        opacity: 0.7;
+    }
+    60%{
+        opacity: 0.9;
+    }
     100%{
-        // height: 70vh;
+        opacity: 1;
         height: calc(var(--vh, 1vh) * 70);
         border-radius: 0rem;
     }
@@ -361,6 +447,12 @@ img{
     0%{
         height: calc(var(--vh, 1vh) * 70);
         border-radius: 0rem;
+    }
+    50%{
+        opacity: 0.7;
+    }
+    51%{
+        opacity: 1;
     }
     100%{
         height: 238rem;
@@ -423,15 +515,32 @@ img{
     .loading{
         border-radius: 5rem 5rem 0rem 0rem;
         width: 178rem;
-        height: 210rem;
+        height: 200rem;
         background-color: #3b4356;
     }
     .img-container{
         width: 100%;
         height: 230rem;
         border-radius: 5rem 5rem 0rem 0rem;
-        // overflow: hidden;
-        img{
+        position: relative;
+        .indicator-bar{
+            position: absolute;
+            bottom: 5rem;
+            left: 3%;
+            width: 94%;
+            display: flex;
+            gap: 5rem;
+            .indicator{
+                background: #a2a0a080;
+                height: 3rem;
+                flex: 1;
+                border-radius: 2rem;
+            }
+            .indicator.active{
+                background-color:#faf6f694;
+            }
+        }
+        .Img{
             width: 100%;
             height: 100%;
             object-fit: cover;

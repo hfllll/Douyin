@@ -10,8 +10,12 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-
+import './css/tailwind.css'
 const app = createApp(App)
+
+// 当你从 node modules 导入 Swiper 自定义元素时，我们需要手动注册它。它应该只执行一次，并且它会全局注册 Swiper 自定义元素。
+import { register } from 'swiper/element/bundle';
+register();
 
 // 创造Pinia实例
 const pinia = createPinia();

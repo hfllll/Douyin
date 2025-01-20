@@ -37,9 +37,9 @@ function throttle(fn, wait) {
 
 // 对页面变化进行监听防抖
 const handleResize = throttle(() => {
-       setTimeout(updateVh, 100);
-    if (document.documentElement.clientWidth >= 510){
-        document.documentElement.style.fontSize = 510 / 375 + 'px'
+    setTimeout(updateVh, 100);
+    if (document.documentElement.clientWidth >= 550){
+        document.documentElement.style.fontSize = 550 / 375 + 'px'
         return
     }
     updateFontSize() 
@@ -50,8 +50,8 @@ onMounted(() => {
     // 节流操作
     window.addEventListener('resize', handleResize)
     updateVh()
-    if (document.documentElement.clientWidth >= 510){
-        document.documentElement.style.fontSize = 510 / 375 + 'px'
+    if (document.documentElement.clientWidth >= 550){
+        document.documentElement.style.fontSize = 550 / 375 + 'px'
     }
     else updateFontSize() 
     // 首次调用 设置字体大小
@@ -59,9 +59,22 @@ onMounted(() => {
 
 </script>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
     *{
         box-sizing: border-box;
         margin: 0 auto;
+        font-size: 14rem;
+        user-select: none;
+        ::-webkit-scrollbar{
+            display: none;
+        }
+    }
+    body{
+        font-family: 'ZCOOL KuaiLe', serif;        
+    }
+    img{
+        -webkit-user-drag: none; 
+        /* 防止拖拽虚影 */
     }
 </style>
 
